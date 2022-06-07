@@ -9,6 +9,7 @@ import { GetTasksFilterDTO } from './DTO/get-tasks-filter.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task, Task as TaskEntity } from './task.entity';
 import { Brackets, Repository } from 'typeorm';
+import { User } from 'src/auth/user.entity';
 
 @Injectable()
 export class TasksService {
@@ -17,9 +18,10 @@ export class TasksService {
     private tasksRepository: Repository<TaskEntity>,
   ) {}
 
-  async getTasks(filterDto: GetTasksFilterDTO): Promise<Task[]> {
+  async getTasks(filterDto: GetTasksFilterDTO, user: User): Promise<Task[]> {
     const { status, search } = filterDto;
     const query = this.tasksRepository.createQueryBuilder('task');
+    query.where({ user });
 
     if (status) {
       query.andWhere('task.status = :status', { status });
@@ -50,10 +52,11 @@ export class TasksService {
     return tasks;
   }
 
-  async getTaskByID(id: string): Promise<Task> {
+  async getTaskByID(id: string, user: User): Promise<Task> {
     const found = await this.tasksRepository.findOne({
       where: {
         id,
+        user,
       },
     });
 
@@ -64,13 +67,14 @@ export class TasksService {
     }
   }
 
-  async createTask(createTaskDTO: CreateTaskDTO): Promise<Task> {
+  async createTask(createTaskDTO: CreateTaskDTO, user: User): Promise<Task> {
     const { title, description } = createTaskDTO;
 
     const task = this.tasksRepository.create({
       title,
       description,
       status: TaskStatus.OPEN,
+      user,
     });
 
     const result = await this.tasksRepository.save(task);
@@ -82,8 +86,11 @@ export class TasksService {
     }
   }
 
-  async deleteTaskByID(ID: string): Promise<void> {
-    const result = await this.tasksRepository.delete(ID);
+  async deleteTaskByID(ID: string, user: User): Promise<void> {
+    const result = await this.tasksRepository.delete({
+      id: ID,
+      user,
+    });
 
     if (result.affected === 0) {
       throw new NotFoundException(`Task with ID "${ID}" not found.`);
@@ -93,8 +100,9 @@ export class TasksService {
   async updateTaskStatusByID(
     ID: string,
     taskStatus: TaskStatus,
+    user: User,
   ): Promise<Task> {
-    const task = await this.getTaskByID(ID);
+    const task = await this.getTaskByID(ID, user);
 
     task.status = taskStatus;
 
