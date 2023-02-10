@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TasksModule } from './tasks/tasks.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       autoLoadEntities: true, // finds entity files and loads them automatically
       synchronize: true, // Keeps your database synchronized -> good for development -> not good for production
     }),
+    AuthModule,
   ],
 })
 export class AppModule {}

@@ -3,11 +3,37 @@ import { Task } from './task.entity';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { TaskStatus } from './task-status.enum';
+import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
 
 @Injectable()
 export class TasksRepository extends Repository<Task> {
   constructor(private dataSource: DataSource) {
     super(Task, dataSource.createEntityManager());
+  }
+
+  async getTasks(filterDto: GetTasksFilterDto): Promise<Task[]> {
+    const { status, search } = filterDto;
+
+    // Create a query with the Query Builder
+    const query = this.createQueryBuilder('task');
+
+    if (status) {
+      query.andWhere('task.status = :status', { status });
+    }
+
+    if (search) {
+      query.andWhere(
+        'task.title ILIKE :search OR task.description ILIKE :search',
+        {
+          search: `%${search}%`,
+        },
+      );
+    }
+
+    // execute the query
+    const tasks = await query.getMany();
+
+    return tasks;
   }
 
   // Don't need this.repository -> we are in the repository.
@@ -28,6 +54,7 @@ export class TasksRepository extends Repository<Task> {
   async deleteTaskById(id: string): Promise<void> {
     const result = await this.delete(id);
 
+    // Read the results of delete to determine if the task was deleted.
     if (result.affected === 0) {
       throw new NotFoundException(`Task with id ${id} not found`);
     }
