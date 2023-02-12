@@ -8,7 +8,6 @@ export class AuthController {
 
   @Post('/signup')
   async signUp(@Body() authCredentialDto: AuthCredentialDto): Promise<void> {
-    console.log(authCredentialDto);
-    this.authService.signUp(authCredentialDto);
+    await this.authService.signUp(authCredentialDto);
   }
 }
