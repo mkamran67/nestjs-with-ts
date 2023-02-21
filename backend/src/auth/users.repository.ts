@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { User } from './user.entity';
-import { AuthCredentialDto } from './auth-credentials.dto';
+import { AuthCredentialDto } from './dto/auth-credentials.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
