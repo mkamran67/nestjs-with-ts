@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards } from '@nestjs/common';
 import { AuthCredentialDto } from './dto/auth-credentials.dto';
 import { AuthService } from './auth.service';
 
@@ -17,4 +17,11 @@ export class AuthController {
   ): Promise<{ accessToken: string }> {
     return this.authService.signIn(authCredentialDto);
   }
+
+  // Sample Protected route
+  // @Post('/test')
+  // @UseGuards(AuthGuard())
+  // test() {
+  //   return true;
+  // }
 }
