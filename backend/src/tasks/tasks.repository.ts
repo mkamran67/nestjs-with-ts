@@ -1,6 +1,11 @@
 import { DataSource, DeleteResult, Repository } from 'typeorm';
 import { Task } from './task.entity';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { TaskStatus } from './task-status.enum';
 import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
@@ -9,6 +14,8 @@ import { GetUser } from 'src/auth/get-user.decorator';
 
 @Injectable()
 export class TasksRepository extends Repository<Task> {
+  private logger = new Logger('TasksRepository', { timestamp: true });
+
   constructor(private dataSource: DataSource) {
     super(Task, dataSource.createEntityManager());
   }
@@ -33,10 +40,15 @@ export class TasksRepository extends Repository<Task> {
       );
     }
 
-    // execute the query
-    const tasks = await query.getMany();
+    try {
+      // execute the query
+      const tasks = await query.getMany();
+      return tasks;
+    } catch (err) {
+      this.logger.error(err.message, err.stack); // Second optional parameter -> stack trace
 
-    return tasks;
+      throw new InternalServerErrorException();
+    }
   }
 
   // Don't need this.repository -> we are in the repository.
