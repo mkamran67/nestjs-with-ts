@@ -10,6 +10,6 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalInterceptors(new TransformInterceptor());
   await app.listen(3000);
-  logger.log('Server is running on port 3000');
+  logger.log(`Server is running on port 3000 as ${process.env.STAGE}`);
 }
 bootstrap();

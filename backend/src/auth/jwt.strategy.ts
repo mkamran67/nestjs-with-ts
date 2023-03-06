@@ -6,6 +6,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UsersRepository } from './users.repository';
 import { JwtPayload } from './types/jwt.payload.interface';
 import { User } from './user.entity';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -13,13 +14,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   constructor(
     @InjectRepository(UsersRepository) private usersRepository: UsersRepository,
+    private configService: ConfigService,
   ) {
     // Derived classes need to implment super() method
     // The follow 2 options are required
     // the secretkey used to verify the JWT
     // and how it'll get the token
     super({
-      secretOrKey: 'topsecret51',
+      secretOrKey: configService.get('JWT_SECRET_KEY'),
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
     });
   }
